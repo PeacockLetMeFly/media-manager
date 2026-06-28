@@ -188,7 +188,7 @@ class SettingsWindow:
 
         self.root = tk.Tk()
         self.root.title('Media Manager')
-        self.root.geometry('300x600')
+        self.root.geometry('300x640')
         self.root.resizable(False, False)
         self.root.configure(bg=BG)
         self.root.attributes('-topmost', True)
@@ -408,6 +408,22 @@ class SettingsWindow:
         self._self_btn.pack(side='right', fill='y')
         self._refresh_self_toggle()
 
+        startup_row = tk.Frame(body, bg=BG, height=36)
+        startup_row.pack(fill='x', pady=(0, 8))
+        startup_row.pack_propagate(False)
+
+        tk.Label(startup_row, text='Launch at startup', bg=BG, fg=TEXT,
+                 font=(FONT, 10, 'bold')).pack(side='left', anchor='center')
+
+        self._startup_btn = tk.Button(
+            startup_row, text='', relief='flat', bd=0,
+            cursor='hand2', padx=14,
+            font=(FONT, 9, 'bold'),
+            command=self._on_startup_toggle,
+        )
+        self._startup_btn.pack(side='right', fill='y')
+        self._refresh_startup_toggle()
+
     # ── callbacks ─────────────────────────────────────────────────────────────
 
     def _on_delay(self, val):
@@ -466,6 +482,29 @@ class SettingsWindow:
     def _refresh_self_toggle(self):
         on = self.config.get('pause_on_self', True)
         self._self_btn.config(
+            text='On' if on else 'Off',
+            bg=ACCENT if on else BORDER,
+            fg='white' if on else MUTED,
+        )
+
+    def _on_startup_toggle(self):
+        try:
+            from startup import is_enabled, enable, disable
+            if is_enabled():
+                disable()
+            else:
+                enable()
+            self._refresh_startup_toggle()
+        except Exception:
+            pass
+
+    def _refresh_startup_toggle(self):
+        try:
+            from startup import is_enabled
+            on = is_enabled()
+        except Exception:
+            on = False
+        self._startup_btn.config(
             text='On' if on else 'Off',
             bg=ACCENT if on else BORDER,
             fg='white' if on else MUTED,
