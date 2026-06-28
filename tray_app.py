@@ -23,6 +23,16 @@ class TrayApp:
         if self._settings:
             self._settings.set_status(status)
 
+    def notify_update(self, version: str, url: str):
+        if self._icon:
+            try:
+                self._icon.notify(
+                    f"Version {version} is available — visit GitHub to download.",
+                    "Media Manager Update"
+                )
+            except Exception:
+                pass
+
     # ── menu actions ─────────────────────────────────────────────────────────
 
     def _open_settings(self, icon=None, item=None):

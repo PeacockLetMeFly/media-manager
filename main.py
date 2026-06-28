@@ -2,6 +2,7 @@ import config as cfg_module
 from audio_monitor import AudioMonitor
 from media_key import press_play_pause, media_is_playing, mic_is_active
 from tray_app import TrayApp
+from updater import check_for_update
 from logger import log
 
 # True only when WE triggered the pause — so we know to resume later.
@@ -67,6 +68,7 @@ def main():
 
     log.info('=== Media Manager started ===')
     monitor.start()
+    check_for_update(lambda v, u: tray[0].notify_update(v, u))
     tray[0].run()
     log.info('=== Media Manager stopped ===')
 
