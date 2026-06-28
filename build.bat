@@ -3,10 +3,13 @@ echo Building Media Manager...
 
 pip install -r requirements.txt --quiet
 
+python generate_icon.py
+
 pyinstaller ^
   --onefile ^
   --windowed ^
   --name "MediaManager" ^
+  --icon "icon.ico" ^
   --hidden-import "pycaw.pycaw" ^
   --hidden-import "comtypes.gen" ^
   --hidden-import "comtypes.gen.AudioPolicy" ^
