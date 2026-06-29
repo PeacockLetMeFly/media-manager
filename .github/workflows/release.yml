@@ -20,7 +20,7 @@ jobs:
         run: pip install pyinstaller pycaw comtypes sounddevice numpy psutil pynput pystray pillow
 
       - name: Build exe
-        run: pyinstaller MediaManager.spec
+        run: pyinstaller ${{ github.workspace }}/MediaManager.spec
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
