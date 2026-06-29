@@ -2,9 +2,10 @@ import math
 from PIL import Image, ImageDraw
 
 STATUS_COLORS = {
-    'listening':    '#22C55E',
-    'paused':       '#B45309',
-    'disconnected': '#6B7280',
+    'listening':      '#22C55E',
+    'paused':         '#B45309',
+    'disconnected':   '#6B7280',
+    'not_in_channel': '#3B82F6',
 }
 
 _ICON_BG = '#1C1C1A'

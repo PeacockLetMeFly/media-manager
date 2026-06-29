@@ -146,6 +146,20 @@ def _voice_app_running(process_match: str) -> bool:
         return False
 
 
+def _voice_app_in_channel(process_match: str) -> bool:
+    """Return True if the voice app has an Active render session (proxy for being in a voice channel)."""
+    try:
+        from pycaw.pycaw import AudioUtilities, IAudioSessionControl
+        for session in AudioUtilities.GetAllSessions():
+            if session.Process and process_match in session.Process.name().lower():
+                state = session._ctl.QueryInterface(IAudioSessionControl).GetState()
+                if state == 1:  # AudioSessionStateActive
+                    return True
+    except Exception:
+        pass
+    return False
+
+
 _sessions_logged = False
 
 def _voice_app_peak(process_match: str) -> float:
@@ -184,11 +198,13 @@ class AudioMonitor:
     """
 
     def __init__(self, on_speaking_start, on_speaking_stop,
-                 on_discord_found, on_discord_lost, config, can_resume=None):
+                 on_discord_found, on_discord_lost, config, can_resume=None,
+                 on_channel_left=None):
         self.on_speaking_start = on_speaking_start
         self.on_speaking_stop = on_speaking_stop
         self.on_discord_found = on_discord_found
         self.on_discord_lost = on_discord_lost
+        self.on_channel_left = on_channel_left
         self.config = config
         self.can_resume = can_resume   # kept for API compat; mic checked inline now
 
@@ -196,7 +212,8 @@ class AudioMonitor:
         self._running = False
         self._thread = None
 
-        self._discord_present = False
+        self._app_running = False
+        self._in_channel = False
         self._last_discord_check = 0
 
         # Per-source speaking flags
@@ -233,18 +250,30 @@ class AudioMonitor:
                 app_name = self.config.get('voice_app', 'Discord')
                 process_match = VOICE_APPS.get(app_name, 'discord')
                 running = _voice_app_running(process_match)
-                if running != self._discord_present:
-                    self._discord_present = running
-                    if running:
-                        log.info(f'{app_name} detected — monitoring started')
-                        self.on_discord_found()
-                    else:
-                        log.warning(f'{app_name} lost — resetting state')
+                in_channel = running and _voice_app_in_channel(process_match)
+
+                if running != self._app_running:
+                    self._app_running = running
+                    if not running:
+                        log.warning(f'{app_name} closed — resetting state')
+                        self._in_channel = False
                         with self._lock:
                             self._hard_reset()
                         self.on_discord_lost()
 
-            if self.config.get('enabled', True) and self._discord_present:
+                if in_channel != self._in_channel:
+                    self._in_channel = in_channel
+                    if in_channel:
+                        log.info(f'{app_name} — joined voice channel, monitoring started')
+                        self.on_discord_found()
+                    elif self._app_running:
+                        log.info(f'{app_name} — left voice channel, monitoring paused')
+                        with self._lock:
+                            self._hard_reset()
+                        if self.on_channel_left:
+                            self.on_channel_left()
+
+            if self.config.get('enabled', True) and self._in_channel:
                 threshold = self.config.get('threshold', 0.01)
                 app_name = self.config.get('voice_app', 'Discord')
                 process_match = VOICE_APPS.get(app_name, 'discord')

@@ -55,6 +55,11 @@ def main():
         if tray[0]:
             tray[0].set_status('disconnected')
 
+    def on_channel_left():
+        _we_paused[0] = False
+        if tray[0]:
+            tray[0].set_status('not_in_channel')
+
     monitor = AudioMonitor(
         on_speaking_start=on_speaking_start,
         on_speaking_stop=on_speaking_stop,
@@ -62,6 +67,7 @@ def main():
         on_discord_lost=on_discord_lost,
         config=config,
         can_resume=can_resume,
+        on_channel_left=on_channel_left,
     )
 
     tray[0] = TrayApp(config=config, save_config=cfg_module.save, monitor=monitor)

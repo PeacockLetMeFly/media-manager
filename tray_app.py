@@ -15,11 +15,19 @@ class TrayApp:
 
     # ── status ────────────────────────────────────────────────────────────────
 
+    _STATUS_LABELS = {
+        'listening':      'Listening',
+        'paused':         'Paused',
+        'disconnected':   'Disconnected',
+        'not_in_channel': 'Not in channel',
+    }
+
     def set_status(self, status: str):
         self._status = status
+        label = self._STATUS_LABELS.get(status, status.capitalize())
         if self._icon:
             self._icon.icon  = make_icon(status)
-            self._icon.title = f"Media Manager  •  {status.capitalize()}"
+            self._icon.title = f"Media Manager  •  {label}"
         if self._settings:
             self._settings.set_status(status)
 
