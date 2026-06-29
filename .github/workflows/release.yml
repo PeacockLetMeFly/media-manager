@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: pip install pyinstaller pycaw comtypes sounddevice numpy psutil pynput pystray pillow
 
+      - name: Generate icon
+        run: python generate_icon.py
+
       - name: Build exe
         run: pyinstaller ${{ github.workspace }}/MediaManager.spec
 
