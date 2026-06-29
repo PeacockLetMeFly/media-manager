@@ -5,6 +5,7 @@ icon.ico
 dist/
 build/
 *.spec
+!MediaManager.spec
 config.json
 media_manager.log
 *.egg-info/
